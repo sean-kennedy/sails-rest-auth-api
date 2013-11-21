@@ -18,7 +18,7 @@ module.exports.adapters = {
 	
 	mongo: {
 		module: 'sails-mongo',
-		url: 'mongodb://wolfmarks:Wa3924R262382f5799TRL@paulo.mongohq.com:10077/wolfmarks',
+		url: 'mongodb://localhost:27017/sails-rest-facebook-auth-api',
 		schema: true
 	}
   
