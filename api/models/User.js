@@ -20,17 +20,12 @@ module.exports = {
 	    email: {
 		    type: 'string',
 		    email: true,
-		    required: true,
-		    unique: true
-	    },
-	    
-	    password: {
-			type: 'string',
-			required: true
+		    required: true
 	    },
 	    
 	    facebook_id: {
-		    type: 'string'
+		    type: 'string',
+		    unique: true
 	    }
 	    
 	    /*toJSON: function() {
