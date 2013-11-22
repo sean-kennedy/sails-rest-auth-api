@@ -23,17 +23,33 @@ var request = require('request');
 
 module.exports = {
 
-	find: function(req, res) {	
+	find: function(req, res) {
+	
+		if (!req.param('id')) {
 		
-		User.find().done(function(err, users) {
+			User.find().done(function(err, users) {
+			
+				if (err) {
+					return res.json({ status: 404, error: err }, 404);
+				}
+				
+				return res.json({ users: users }, 200);
+				
+			});
 		
-			if (err) {
-				return res.json({ status: 404, error: err }, 404);
-			}
+		} else {
 			
-			return res.json({ users: users }, 200);
+			User.findOne({ facebook_id: req.param('id') }).done(function(err, users) {
 			
-		});
+				if (err) {
+					return res.json({ status: 404, error: err }, 404);
+				}
+				
+				return res.json({ user: users }, 200);
+				
+			});
+			
+		}
 		
 	},
 	
