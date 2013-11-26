@@ -26,6 +26,10 @@ module.exports = {
 	    facebook_id: {
 		    type: 'string',
 		    unique: true
+	    },
+	    
+	    api_key: {
+		    type: 'string'
 	    }
 	    
 	    /*toJSON: function() {

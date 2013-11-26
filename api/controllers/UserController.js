@@ -53,7 +53,7 @@ module.exports = {
 		
 	},
 	
-	create: function(req, res) {
+	/*create: function(req, res) {
 	
 		// Set the vars
 		var facebook_id = '',
@@ -116,6 +116,31 @@ module.exports = {
 		}
 		
 		//return res.json({ id: req.param('facebook_id'), access_token: req.param('access_token') });
+		
+	},*/
+	
+	destroy: function(req, res) {
+		
+		if (req.param('id')) {
+			
+			var id = req.param('id');
+			
+			User.destroy({ facebook_id: id }).done(function(err, users) {
+			
+				if(err) {
+					console.log(err);
+					return res.json(err);
+				} else {
+					return res.json({ status: 200, message: 'User deleted' }, 200);
+				}
+			
+			});
+		
+		} else {
+			
+			return res.json({ status: 200, error: 'No ID specified' }, 200);
+			
+		}
 		
 	},
 	
