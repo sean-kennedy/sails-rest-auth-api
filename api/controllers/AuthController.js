@@ -15,154 +15,112 @@
  * @docs        :: http://sailsjs.org/#!documentation/controllers
  */
  
-var request = require('request');
+var bcrypt = require('bcrypt')
+  , SALT_WORK_FACTOR = 10,
+  hat = require('hat');
+ 
+//var request = require('request');
 
 module.exports = {
 
+	find: function(req, res) {
+	
+		// Auth user credentials and return ze API key
+		
+		// Could include different Auth strategies to login and return the API key
+		
+		if(!req.param('password') && !req.param('email')) {
+			return res.json({ status: 400, error: 'Missing parameters' }, 400);
+		}
+		
+		User.findOne({ email: req.param('email') }).done(function(err, users) {
+		
+			if (err) {
+				return res.json({ status: 500, error: err }, 500);
+			}
+			
+			if (users) {
+				
+				var db_password = users.password;
+				
+				// Check the password
+				bcrypt.compare(req.param('password'), db_password, function(err, isMatch) {
+				    
+				    if (err) {
+					    return res.json({ status: 500, error: err }, 500);
+				    }
+				    
+				    if (isMatch == true) {
+				    	
+				    	// Grab the users API key to send back with the response
+				    	var api_key = users.getApiKey();
+					    return res.json({ user: users, api_key: api_key }, 200);
+					    
+				    } else {
+					    return res.json({ status: 400, message: 'Incorrect login details' }, 400);
+				    }
+				    
+				});
+				
+				
+			} else {
+				return res.json({ status: 400, message: 'Incorrect login details' }, 400);
+			}
+		
+		});
+		
+	},
+	
 	create: function(req, res) {
-    
-		// Set the vars
-		var facebook_id = '',
-			access_token = '',
-			graph_api = 'https://graph.facebook.com/me?access_token=';
-		
-		// Gen API key method
-		function gen_api_key() {
-		    var hash = 0, i, char;
-		    if (this.length == 0) return hash;
-		    for (i = 0, l = this.length; i < l; i++) {
-		        char  = this.charCodeAt(i);
-		        hash  = ((hash<<5)-hash)+char;
-		        hash |= 0; // Convert to 32bit integer
-		    }
-		    return hash;
-		};
-		
-		// Get Params
-		if (req.param('facebook_id')) {
-			facebook_id = req.param('facebook_id');
-		}
-		
-		if (req.param('access_token')) {
-			access_token = req.param('access_token');
-		}	
-			
-		// Check for Facebook ID and Access token params
-		if (access_token && facebook_id) {
-			
-			// Lookup DB for the User
-			User.findOne({ facebook_id: facebook_id }).done(function(err, users) {
-			
-				if (err || !users) {
+	
+         try {
+         
+	         if(!req.param('password') && !req.param('email') && !req.param('name')) {
+		         return res.json({ status: 400, error: 'Missing parameters' }, 400);
+	         }
+	        
+	         function createUser(hash) {
+	         	
+	         	// Generate a new API key
+				var new_api_key = hat();
+	         
+		        User.create({
+		         
+			     	name: req.param('name'),
+			     	email: req.param('email'),
+			     	password: hash,
+			     	api_key: new_api_key
+			     	
+		        }).done(function(err, user){
+		         
+					if (err) {
+						return res.json({ status: 500, error: err }, 500);
+					}
 					
-					// User doesn't exist, so let's verify they are real via Facebook then add them to the DB
-					//return res.json({ status: 403, error: 'User does not exist' }, 403);
-					
-					request.get({ url: graph_api+access_token, json: true }, function (error, response, body) {
-					
-						if (!error && response.statusCode == 200) {
-							
-							// User has a legit token
-							
-							// Generate an API key
-							var new_api_key = gen_api_key();
-							
-							console.log(new_api_key);
-							
-							// Add them to DB
-							User.create({
-							
-								name: body.name,
-								email: body.email,
-								facebook_id: body.id,
-								api_key: new_api_key
-								
-							}).done(function(err, user){
-							
-								if(err) {
-									console.log(err);
-									return res.json(err);
-								}
-								
-								if (user) {
-									res.json(user);
-								}
-								
-							});
-							
-						} else {
-						
-							// Token isn't verified, send back an error the client can use
-							return res.json({ status: 403, error: 'Facebook did not like this request' }, 403);
-							
-						}
-						
-					});
-					
-					
-				} else {  	
-				
-					// User exists already in our database
-					// Query Facebook to check the Facebook token is legit as the Facebook ID is easy to fake
-					// Best to include the API's Facebook app secret key with these calls to verify the token originates from our app
-					
-					request.get({ url: graph_api+access_token, json: true }, function (error, response, body) {
-					
-						if (!error && response.statusCode == 200) {
-							
-							// Check to see if the DB user ID matches the returned ID from Facebook
-							if (body.id == users.facebook_id) {
-								
-								var new_api_key = gen_api_key();
-								
-								console.log(new_api_key);
-								
-								User.update({
-									
-									api_key: new_api_key
-									
-								},{
-									
-									facebook_id: facebook_id
-									
-								}).done(function(err, user){
-								
-									if(err) {
-										console.log(err);
-										return res.json(err);
-									}
-									
-								});
-								
-								// Send the user back to the client
-								res.json(users);
-								
-							} else {
-								
-								// ID did not match, send back an error the client can use (not specific to the exact error)
-								return res.json({ status: 403, error: 'Facebook did not like this request' }, 403);
-								
-							}
-							
-						} else {
-						
-							// Token isn't verified, send back an error the client can use
-							return res.json({ status: 403, error: 'Facebook did not like this request' }, 403);
-							
-						}
-						
-					});
-					
-				}
-				
-			});
-			
-		} else {
-			
-			// Insufficient params supplied, send back an error response the client can use
-			return res.json({ status: 403, error: 'Access token or user ID not specified' }, 403);
-			
-		}
+					if (user) {
+						// Include the new API key in the response
+						return res.json({ user: user, api_key: new_api_key });
+					} else {
+						return res.json({ status: 500, error: 'Looks like something went wrong' }, 500);
+					}
+		         	
+		        });
+		         
+	         };
+	        
+	         bcrypt.hash(req.param('password'),SALT_WORK_FACTOR,function(err, hash){
+	         
+	         	if(err) {
+	         		return res.json({ status: 500, error: err }, 500);
+	         	}
+	         	
+	         	createUser(hash);
+	         	
+	         });
+        
+         } catch(e) {
+	         return res.json({ status: 500, error: e.message }, 500);
+         }
 	
 	},
 

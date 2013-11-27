@@ -15,6 +15,20 @@ module.exports = {
 	    url: {
 	        type: 'string',
 	        required: true
+	    },
+	    
+	    description: {
+		    type: 'text'
+	    },
+	    
+	    user_name: {
+		    type: 'string',
+		    required: true,
+	    },
+	    
+	    user_id: {
+		    type: 'string',
+		    required: true
 	    }
 	    
 	}

@@ -20,7 +20,13 @@ module.exports.policies = {
   
   AuthController: {
 	  
-	  create: true
+	  '*': true
+	  
+  },
+  
+  UserController: {
+	  
+	  find: true
 	  
   }
 

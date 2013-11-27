@@ -18,25 +18,32 @@ module.exports = {
 	    },
 	    
 	    email: {
-		    type: 'string',
+		    type: 'email',
 		    email: true,
-		    required: true
+		    required: true,
+		    unique: true
 	    },
 	    
-	    facebook_id: {
-		    type: 'string',
-		    unique: true
+	    password: {
+		    type: 'String',
+		    required: true
 	    },
 	    
 	    api_key: {
 		    type: 'string'
-	    }
+	    },
 	    
-	    /*toJSON: function() {
+	    toJSON: function() {
 			var obj = this.toObject();
 			delete obj.password;
+			//delete obj.api_key;
 			return obj;
-	    }*/
+	    },
+	    
+	    getApiKey: function() {
+		    var obj = this.api_key;
+		    return obj;
+	    }
 		    
 	}
 
