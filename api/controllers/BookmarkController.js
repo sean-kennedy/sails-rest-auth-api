@@ -19,6 +19,9 @@ module.exports = {
 
 	find: function(req, res) {
 	
+		// Might need to auth this to the individual user only, will leave it global for now to anyone with an API key
+		// The best strategy going forward would be limit the returned results to ones added by the current API key being used.
+	
 		if (!req.param('id')) {
 		
 			Bookmark.find().done(function(err, bookmarks) {
@@ -27,13 +30,29 @@ module.exports = {
 					return res.json({ status: 500, error: err }, 500);
 				}
 				
-				return res.json(bookmarks, 200);
+				// Bunch of async functions so need a check to see if they are all done before returning the result
+				var b = bookmarks.length;
+				
+				function checkIfReady(b) {
+					if (b == 1) {
+						return res.json(bookmarks, 200);
+					}
+				}
+				
+				bookmarks.forEach(function(bookmark){
+					
+					bookmark.getUserName(function (user) {
+						if (user) {
+							bookmark.user_name = user.name;
+						} 
+						checkIfReady(b--);
+					});
+					
+				});
 				
 			});
 		
 		} else {
-			
-			// Might need to auth this, will leave it global for now
 			
 			Bookmark.findOne({ id: req.param('id') }).done(function(err, bookmarks) {
 			
@@ -63,7 +82,6 @@ module.exports = {
 		
 			url: req.param('url'),
 			description: req.param('description'),
-			user_name: req.user.name, 
 			user_id: req.user.id
 			
 		}).done(function(err, bookmark) {
@@ -135,40 +153,6 @@ module.exports = {
 		} else {
 			return res.json({ status: 400, error: 'No ID specified' }, 400);
 		}
-		
-			/*if (req.user.id == req.param('id')) {
-			
-				var id = req.param('id');
-				
-				var new_params = {};
-				
-				if (req.param('name')) {
-					new_params.name = req.param('name');
-				}
-				
-				if (req.param('email')) {
-					new_params.email = req.param('email');
-				}
-				
-				User.update({ id: id }, new_params).done(function(err, users) {
-				
-					if(err) {
-						return res.json({ status: 500, error: err }, 500);
-					}
-					
-					if (!users.length == 0) {
-						return res.json({ status: 200, message: 'User updated', attributes: users }, 200);
-					} else {
-						return res.json({ status: 400, message: 'No record found for that ID' }, 400);
-					}
-				
-				});
-				
-			} else {
-				return res.json({ status: 403, error: 'Forbidden' }, 403);
-			}*/
-		
-
 	
 	},
 	

@@ -21,15 +21,23 @@ module.exports = {
 		    type: 'text'
 	    },
 	    
-	    user_name: {
-		    type: 'string',
-		    required: true,
-	    },
-	    
 	    user_id: {
 		    type: 'string',
 		    required: true
-	    }
+	    },
+	    
+	    user_name: {
+		    type: 'string',
+		    required: true
+	    },
+	 
+		getUserName: function(callback) {
+		
+			User.findOne({ id: this.user_id }).exec(function(err, user) {
+				callback(user);
+			});
+			
+		}
 	    
 	}
 
