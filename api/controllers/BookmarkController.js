@@ -41,6 +41,7 @@ module.exports = {
 				
 				bookmarks.forEach(function(bookmark){
 					
+					// Grab user name
 					bookmark.getUserName(function (user) {
 						if (user) {
 							bookmark.user_name = user.name;
@@ -54,14 +55,22 @@ module.exports = {
 		
 		} else {
 			
-			Bookmark.findOne({ id: req.param('id') }).done(function(err, bookmarks) {
+			Bookmark.findOne({ id: req.param('id') }).done(function(err, bookmark) {
 			
 				if (err) {
 					return res.json({ status: 500, error: err }, 500);
 				}
 				
-				if (bookmarks) {
-					return res.json(bookmarks, 200);
+				if (bookmark) {
+					
+					// Grab user name
+					bookmark.getUserName(function (user) {
+						if (user) {
+							bookmark.user_name = user.name;
+						} 
+						return res.json(bookmark, 200);
+					});
+					
 				} else {
 					return res.json({ status: 400, message: 'No record found for that ID' }, 400);
 				}
@@ -77,7 +86,7 @@ module.exports = {
 		if (!req.param('url')) {
 			return res.json({ status: 400, error: 'No URL specified' }, 400);
 		}
-	
+
 		Bookmark.create({
 		
 			url: req.param('url'),
@@ -91,6 +100,7 @@ module.exports = {
 			}
 			
 			if (bookmark) {
+				bookmark.user_name = req.user.name;
 				return res.json(bookmark);
 			} else {
 				return res.json({ status: 500, error: 'Looks like something went wrong' }, 500);

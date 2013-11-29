@@ -18,7 +18,8 @@ module.exports = {
 	    },
 	    
 	    description: {
-		    type: 'text'
+		    type: 'text',
+		    defaultsTo: null
 	    },
 	    
 	    user_id: {
@@ -27,8 +28,7 @@ module.exports = {
 	    },
 	    
 	    user_name: {
-		    type: 'string',
-		    required: true
+		    type: 'string'
 	    },
 	 
 		getUserName: function(callback) {

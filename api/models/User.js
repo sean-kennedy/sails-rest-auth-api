@@ -29,6 +29,11 @@ module.exports = {
 		    required: true
 	    },
 	    
+	    facebookId: {
+		    type: 'string',
+		    defaultsTo: null
+	    },
+	    
 	    api_key: {
 		    type: 'string'
 	    },
@@ -36,13 +41,9 @@ module.exports = {
 	    toJSON: function() {
 			var obj = this.toObject();
 			delete obj.password;
-			//delete obj.api_key;
+			delete obj.api_key;
+			delete obj.facebookId;
 			return obj;
-	    },
-	    
-	    getApiKey: function() {
-		    var obj = this.api_key;
-		    return obj;
 	    }
 		    
 	}
