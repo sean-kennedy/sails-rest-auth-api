@@ -22,18 +22,18 @@ module.exports = {
 		    defaultsTo: null
 	    },
 	    
-	    user_id: {
+	    userId: {
 		    type: 'string',
 		    required: true
 	    },
 	    
-	    user_name: {
+	    userName: {
 		    type: 'string'
 	    },
 	 
 		getUserName: function(callback) {
 		
-			User.findOne({ id: this.user_id }).exec(function(err, user) {
+			User.findOne({ id: this.userId }).exec(function(err, user) {
 				callback(user);
 			});
 			

@@ -205,7 +205,7 @@ module.exports = {
 					}).done(function(err, user){
 					 
 						if (err) {
-							return res.json({ status: 500, error: err }, 500);
+							return res.json({ status: 400, error: err }, 400);
 						}
 						
 						if (user) {

@@ -24,7 +24,7 @@ module.exports = {
 	
 		if (!req.param('id')) {
 		
-			Bookmark.find().done(function(err, bookmarks) {
+			Bookmark.find().where({ userId: req.user.id }).done(function(err, bookmarks) {
 			
 				if (err) {
 					return res.json({ status: 500, error: err }, 500);
@@ -39,23 +39,29 @@ module.exports = {
 					}
 				}
 				
-				bookmarks.forEach(function(bookmark){
-					
-					// Grab user name
-					bookmark.getUserName(function (user) {
-						if (user) {
-							bookmark.user_name = user.name;
-						} 
-						checkIfReady(b--);
+				if (b != 0) {
+				
+					bookmarks.forEach(function(bookmark){
+						
+						// Grab user name
+						bookmark.getUserName(function (user) {
+							if (user) {
+								bookmark.userName = user.name;
+							} 
+							checkIfReady(b--);
+						});
+						
 					});
-					
-				});
+				
+				} else {
+					return res.json({ status: 200, message: 'Goose egg!' }, 200);
+				}
 				
 			});
 		
 		} else {
 			
-			Bookmark.findOne({ id: req.param('id') }).done(function(err, bookmark) {
+			Bookmark.findOne({ id: req.param('id'), userId: req.user.id }).done(function(err, bookmark) {
 			
 				if (err) {
 					return res.json({ status: 500, error: err }, 500);
@@ -66,7 +72,7 @@ module.exports = {
 					// Grab user name
 					bookmark.getUserName(function (user) {
 						if (user) {
-							bookmark.user_name = user.name;
+							bookmark.userName = user.name;
 						} 
 						return res.json(bookmark, 200);
 					});
@@ -91,7 +97,7 @@ module.exports = {
 		
 			url: req.param('url'),
 			description: req.param('description'),
-			user_id: req.user.id
+			userId: req.user.id
 			
 		}).done(function(err, bookmark) {
 		
@@ -100,7 +106,7 @@ module.exports = {
 			}
 			
 			if (bookmark) {
-				bookmark.user_name = req.user.name;
+				bookmark.userName = req.user.name;
 				return res.json(bookmark);
 			} else {
 				return res.json({ status: 500, error: 'Looks like something went wrong' }, 500);
@@ -123,7 +129,7 @@ module.exports = {
 				if (bookmark) {
 					
 					// Check permission
-					if (req.user.id == bookmark.user_id) {
+					if (req.user.id == bookmark.userId) {
 					
 						// Update object
 						var new_params = {};
@@ -179,7 +185,7 @@ module.exports = {
 				if (bookmark) {
 					
 					// Check permission
-					if (req.user.id == bookmark.user_id) {
+					if (req.user.id == bookmark.userId) {
 					
 						bookmark.destroy(function(err){
 							if (err) {
