@@ -19,9 +19,6 @@ module.exports = {
 
 	find: function(req, res) {
 	
-		// Might need to auth this to the individual user only, will leave it global for now to anyone with an API key
-		// The best strategy going forward would be limit the returned results to ones added by the current API key being used.
-	
 		if (!req.param('id')) {
 		
 			Bookmark.find().where({ userId: req.user.id }).done(function(err, bookmarks) {

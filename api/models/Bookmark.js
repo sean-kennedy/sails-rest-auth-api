@@ -30,6 +30,10 @@ module.exports = {
 	    userName: {
 		    type: 'string'
 	    },
+	    
+	    groups: {
+		    type: 'string',
+	    },
 	 
 		getUserName: function(callback) {
 		
