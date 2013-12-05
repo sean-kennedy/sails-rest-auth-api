@@ -33,6 +33,11 @@ module.exports = {
 	    bookmarks: {
 		    type: 'array',
 		    defaultsTo: []
+	    },
+	    
+	    subscribers: {
+		    type: 'array',
+		    defaultsTo: []
 	    }
 	
 	}

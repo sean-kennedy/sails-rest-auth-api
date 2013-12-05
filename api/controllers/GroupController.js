@@ -47,8 +47,8 @@ module.exports = {
 				}
 				
 				if (group) {
-					// Needs to be changed to allow subscribers
-					if (group.private == false || req.user.id == group.owner) {
+				
+					if (group.private == false || req.user.id == group.owner || group.subscribers.indexOf(req.user.id) > -1) {
 						
 						if (group.bookmarks.length > 0) {
 				
@@ -64,11 +64,21 @@ module.exports = {
 							}
 						
 							group.bookmarks.forEach(function(group_bookmark){
+							
 								Bookmark.findOne({ id: group_bookmark }).done(function(err, bookmark) {
-									delete bookmark.updatedAt;
-									new_bookmarks_array.push(bookmark);
-									checkIfReady(gb--)
+									if (err) {
+										return res.json({ status: 500, error: err }, 500);
+									}
+									
+									if (bookmark) {
+										delete bookmark.updatedAt;
+										new_bookmarks_array.push(bookmark);
+										checkIfReady(gb--);
+									} else {
+										checkIfReady(gb--);
+									}
 								});
+								
 							});
 							
 						} else {
@@ -154,6 +164,12 @@ module.exports = {
 							
 							if (group) {
 							
+								function groupSave() {
+									group.save(function(err){
+										return res.json({ status: 200, message: 'Group updated', attributes: group }, 200);
+									});
+								}
+							
 								if (req.param('name')) {
 									group.name = req.param('name');
 								}
@@ -161,10 +177,21 @@ module.exports = {
 								if (req.param('description')) {
 									group.description = req.param('description');
 								}
-							
-								if (req.param('bookmark')) {
-									
-									// Verify exists
+								
+								if (req.param('private')) {
+									if (req.param('private') == 'true') {
+										group.private = true;
+									} else if (req.param('private') == 'false') {
+										group.private = false; 
+									} else {
+										return res.json({ status: 400, error: 'Private parameter not formed correctly' }, 400);
+									}
+								}
+								
+								if (req.param('bookmark') && req.param('subscriber') ) {
+									return res.json({ status: 400, message: 'Cannot update subscriber and bookmark in the same request' }, 400); 
+								} else if (req.param('bookmark')) {
+
 									Bookmark.findOne({ id: req.param('bookmark') }).done(function(err, bookmark){
 										if (err) {
 											return res.json({ status: 500, error: err }, 500);
@@ -174,9 +201,7 @@ module.exports = {
 											if (group.bookmarks.indexOf(bookmark.id) == -1) {
 											
 												group.bookmarks.push(bookmark.id);
-												group.save(function(err){
-													return res.json({ status: 200, message: 'Group updated', attributes: group }, 200);
-												});
+												groupSave();
 												
 											} else {
 												return res.json({ status: 400, message: 'That bookmark is already part of this group' }, 400); 
@@ -185,11 +210,30 @@ module.exports = {
 											return res.json({ status: 400, message: 'No record found for that bookmark ID' }, 400);
 										}
 									});
+								
+								} else if (req.param('subscriber')) {
+								
+									User.findOne({ id: req.param('subscriber') }).done(function(err, user) {
+										if (err) {
+											return res.json({ status: 500, error: err }, 500);
+										}
+										
+										if (user) {
+											if (group.subscribers.indexOf(user.id) == -1) {
+											
+												group.subscribers.push(user.id);
+												groupSave();
+												
+											} else {
+												return res.json({ status: 400, message: 'That user is already part of this group' }, 400); 
+											}
+										} else {
+											return res.json({ status: 400, message: 'No record found for that user ID' }, 400);
+										}
+									});
 									
 								} else {
-									group.save(function(err){
-										return res.json({ status: 200, message: 'Group updated', attributes: group }, 200);
-									});
+									groupSave();
 								}
 								
 							} else {
