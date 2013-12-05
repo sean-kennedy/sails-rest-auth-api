@@ -21,13 +21,16 @@ module.exports = {
 	
 		if (!req.param('id')) {
 		
-			Group.find().where({ private: false }).done(function(err, groups) {
+			Group.find({ owner: req.user.id }).done(function(err, groups) {
 			
 				if (err) {
 					return res.json({ status: 500, error: err }, 500);
 				}
 				
 				if (groups) {
+					groups.forEach(function(group){
+						delete group.bookmarks;
+					});
 					return res.json(groups, 200);
 				} else {
 					return res.json({ status: 200, message: 'Goose egg!' }, 200);
@@ -44,9 +47,34 @@ module.exports = {
 				}
 				
 				if (group) {
-				
+					// Needs to be changed to allow subscribers
 					if (group.private == false || req.user.id == group.owner) {
-						return res.json(group, 200);
+						
+						if (group.bookmarks.length > 0) {
+				
+							// Bunch of async stuff
+							var gb = group.bookmarks.length,
+								new_bookmarks_array = [];
+							
+							function checkIfReady(gb) {
+								if (gb == 1) {
+									group.bookmarks = new_bookmarks_array;
+									return res.json(group, 200);
+								}
+							}
+						
+							group.bookmarks.forEach(function(group_bookmark){
+								Bookmark.findOne({ id: group_bookmark }).done(function(err, bookmark) {
+									delete bookmark.updatedAt;
+									new_bookmarks_array.push(bookmark);
+									checkIfReady(gb--)
+								});
+							});
+							
+						} else {
+							return res.json(group, 200);
+						}
+						
 					} else {
 						return res.json({ status: 400, message: 'No record found for that ID' }, 400);
 					}	
@@ -105,7 +133,84 @@ module.exports = {
 	
 	update: function(req, res) {
 	
-		res.json({ status: 200, message: 'Update' });
+		if (req.param('id')) {
+		
+			Group.findOne({ id: req.param('id') }).done(function(err, group) {
+			
+				if (err) {
+					return res.json({ status: 500, error: err }, 500);
+				}
+				
+				if (group) {
+					
+					// Check permission
+					if (req.user.id == group.owner) {
+						
+						Group.findOne({ id: req.param('id') }).done(function(err, group) {
+						
+							if(err) {
+								return res.json({ status: 500, error: err }, 500);
+							}
+							
+							if (group) {
+							
+								if (req.param('name')) {
+									group.name = req.param('name');
+								}
+								
+								if (req.param('description')) {
+									group.description = req.param('description');
+								}
+							
+								if (req.param('bookmark')) {
+									
+									// Verify exists
+									Bookmark.findOne({ id: req.param('bookmark') }).done(function(err, bookmark){
+										if (err) {
+											return res.json({ status: 500, error: err }, 500);
+										}
+										
+										if (bookmark) {
+											if (group.bookmarks.indexOf(bookmark.id) == -1) {
+											
+												group.bookmarks.push(bookmark.id);
+												group.save(function(err){
+													return res.json({ status: 200, message: 'Group updated', attributes: group }, 200);
+												});
+												
+											} else {
+												return res.json({ status: 400, message: 'That bookmark is already part of this group' }, 400); 
+											}
+										} else {
+											return res.json({ status: 400, message: 'No record found for that bookmark ID' }, 400);
+										}
+									});
+									
+								} else {
+									group.save(function(err){
+										return res.json({ status: 200, message: 'Group updated', attributes: group }, 200);
+									});
+								}
+								
+							} else {
+								return res.json({ status: 400, message: 'No record found for that ID' }, 400);
+							}
+						
+						});
+						
+					} else {
+						return res.json({ status: 403, error: 'Forbidden' }, 403);
+					}
+					
+				} else {
+					return res.json({ status: 400, message: 'No record found for that ID' }, 400);
+				}
+			
+			});
+		
+		} else {
+			return res.json({ status: 400, error: 'No ID specified' }, 400);
+		}
 	
 	},
 	

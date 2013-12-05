@@ -28,6 +28,11 @@ module.exports = {
 	    private: {
 		    type: 'boolean',
 		    defaultsTo: true
+	    },
+	    
+	    bookmarks: {
+		    type: 'array',
+		    defaultsTo: []
 	    }
 	
 	}
