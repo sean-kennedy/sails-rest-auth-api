@@ -22,13 +22,13 @@ module.exports.policies = {
 	  
 	  '*': true
 	  
-  },
+  }
   
-  UserController: {
+  /*UserController: {
 	  
 	  find: true
 	  
-  }
+  }*/
 
   /*
 	// Here's an example of adding some policies to a controller

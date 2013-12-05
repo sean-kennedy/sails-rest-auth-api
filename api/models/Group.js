@@ -23,6 +23,11 @@ module.exports = {
 	    
 	    owner: {
 		    type: 'string'
+	    },
+	    
+	    private: {
+		    type: 'boolean',
+		    defaultsTo: true
 	    }
 	
 	}

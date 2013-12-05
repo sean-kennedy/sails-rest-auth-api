@@ -37,14 +37,35 @@ module.exports = {
 		
 		} else {
 			
-			User.findOne({ id: req.param('id') }).done(function(err, users) {
+			User.findOne({ id: req.param('id') }).done(function(err, user) {
 			
 				if (err) {
 					return res.json({ status: 500, error: err }, 500);
 				}
 				
-				if (users) {
-					return res.json(users, 200);
+				if (user) {
+
+					if (req.user.id == user.id) {
+					
+						Group.find().where({ owner: req.user.id }).done(function(err, groups) {	
+							if(err) {
+								return res.json({ status: 500, error: err }, 500);
+							}
+							if (groups) {
+								groups.forEach(function(group){
+									delete group.createdAt;
+									delete group.updatedAt;
+									delete group.owner;
+								});
+								user.groups = groups;
+								return res.json(user, 200);
+							}
+						});
+
+					} else {
+						return res.json(user, 200);
+					}
+					
 				} else {
 					return res.json({ status: 400, message: 'No record found for that ID' }, 400);
 				}
@@ -52,6 +73,12 @@ module.exports = {
 			});
 			
 		}
+		
+	},
+	
+	create: function(req, res) {
+		
+		return res.json({ status: 404, message: 'This endpoint does not exist' }, 404);
 		
 	},
 	
