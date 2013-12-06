@@ -91,7 +91,8 @@ module.exports = {
 		}
 
 		Bookmark.create({
-		
+			
+			title: req.param('title'),
 			url: req.param('url'),
 			description: req.param('description'),
 			userId: req.user.id
@@ -137,6 +138,10 @@ module.exports = {
 						
 						if (req.param('description')) {
 							new_params.description = req.param('description');
+						}
+						
+						if (req.param('title')) {
+							new_params.title = req.param('title');
 						}
 						
 						Bookmark.update({ id: req.param('id') }, new_params).done(function(err, bookmarks) {

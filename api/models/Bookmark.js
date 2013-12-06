@@ -12,6 +12,10 @@ module.exports = {
 
 	attributes: {
 	
+		title: {
+			type: 'string'
+		},
+	
 	    url: {
 	        type: 'string',
 	        required: true
