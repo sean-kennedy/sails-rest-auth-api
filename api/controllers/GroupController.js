@@ -21,17 +21,26 @@ module.exports = {
 	
 		if (!req.param('id')) {
 		
-			Group.find({ owner: req.user.id }).done(function(err, groups) {
+			Group.find().done(function(err, groups) {
 			
 				if (err) {
 					return res.json({ status: 500, error: err }, 500);
 				}
 				
 				if (groups) {
-					groups.forEach(function(group){
-						delete group.bookmarks;
+				
+					new_groups = [];
+				
+					groups.forEach(function(group) {
+						if (req.user.id == group.owner || group.subscribers.indexOf(req.user.id) > -1) {
+							delete group.bookmarks;
+							delete group.subscribers;
+							new_groups.push(group);
+						}
 					});
-					return res.json(groups, 200);
+					
+					return res.json(new_groups, 200);
+				
 				} else {
 					return res.json({ status: 200, message: 'Goose egg!' }, 200);
 				}
