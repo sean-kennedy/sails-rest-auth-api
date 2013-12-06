@@ -68,6 +68,7 @@ module.exports = {
 							function checkIfReady(gb) {
 								if (gb == 1) {
 									group.bookmarks = new_bookmarks_array;
+									delete group.subscribers;
 									return res.json(group, 200);
 								}
 							}
