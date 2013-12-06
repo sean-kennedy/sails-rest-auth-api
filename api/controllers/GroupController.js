@@ -163,7 +163,7 @@ module.exports = {
 				if (group) {
 					
 					// Check permission
-					if (req.user.id == group.owner) {
+					if (req.user.id == group.owner || group.subscribers.indexOf(req.user.id) > -1) {
 						
 						Group.findOne({ id: req.param('id') }).done(function(err, group) {
 						
@@ -207,13 +207,17 @@ module.exports = {
 										}
 										
 										if (bookmark) {
-											if (group.bookmarks.indexOf(bookmark.id) == -1) {
-											
-												group.bookmarks.push(bookmark.id);
-												groupSave();
+											if (req.user.id == bookmark.userId) {
+												if (group.bookmarks.indexOf(bookmark.id) == -1) {
 												
+													group.bookmarks.push(bookmark.id);
+													groupSave();
+													
+												} else {
+													return res.json({ status: 400, message: 'That bookmark is already part of this group' }, 400); 
+												}
 											} else {
-												return res.json({ status: 400, message: 'That bookmark is already part of this group' }, 400); 
+												return res.json({ status: 400, message: 'User does not have permission to edit that bookmark' }, 400);
 											}
 										} else {
 											return res.json({ status: 400, message: 'No record found for that bookmark ID' }, 400);
