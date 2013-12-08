@@ -92,6 +92,7 @@ module.exports = {
 							});
 							
 						} else {
+							delete group.subscribers;
 							return res.json(group, 200);
 						}
 						

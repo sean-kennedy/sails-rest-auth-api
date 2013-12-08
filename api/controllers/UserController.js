@@ -123,6 +123,10 @@ module.exports = {
 	},
 
 	destroy: function(req, res) {
+	
+		// Needs to be updated to destroy all instances of the user's data. Bookmarks, Groups, 
+		// remove subscriber status from groups etc.
+		// Also could use an API equivalent of a confirmation such as including a delete=yes field.
 		
 		if (req.param('id')) {
 		
