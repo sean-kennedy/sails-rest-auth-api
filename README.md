@@ -1,2 +1,2 @@
 ## Sails REST API
-This is a working repo for a REST (stateless) API powered by Sails.js and authenticated by traditional username and password and Facebook. It's intended for use with client-side frameworks such as Angular.js without server side session management. It utilises API keys distributed by the /auth route to authenticate each request.  
+This is a working repo for a REST (stateless) API powered by Sails.js and authenticated by traditional username and password and Facebook. It's intended for use with client-side frameworks such as Angular.js without server side session management. It utilises API keys distributed by the /auth route to authenticate each request.
