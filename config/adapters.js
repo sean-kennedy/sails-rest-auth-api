@@ -18,7 +18,7 @@ module.exports.adapters = {
 	
 	mongo: {
 		module: 'sails-mongo',
-		url: 'mongodb://localhost:27017/sails-rest-facebook-auth-api',
+		url: 'mongodb://localhost:27017/sails-bookmark',
 		schema: true
 	}
   

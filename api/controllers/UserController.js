@@ -47,7 +47,14 @@ module.exports = {
 
 					if (req.user.id == user.id) {
 					
-						Group.find().where({ owner: req.user.id }).done(function(err, groups) {	
+						/*Group.find({ 
+							where: { 
+								or: [
+									{ owner: req.user.id }, 
+									{ subscribers: { contains: req.user.id } }
+								] 
+							}
+							}).done(function(err, groups) {	
 							if(err) {
 								return res.json({ status: 500, error: err }, 500);
 							}
@@ -60,7 +67,9 @@ module.exports = {
 								user.groups = groups;
 								return res.json(user, 200);
 							}
-						});
+						});*/
+						
+						return res.json(user, 200);
 
 					} else {
 						return res.json(user, 200);

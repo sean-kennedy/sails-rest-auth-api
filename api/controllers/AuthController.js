@@ -95,6 +95,7 @@ module.exports = {
 							
 							if (body.id == user.facebookId) {
 								
+								console.log('Facebook user found in DB!');
 								user.apiKey = user.api_key;
 								return res.json(user, 200);
 								
@@ -109,7 +110,48 @@ module.exports = {
 					});
 					
 				} else {
-					return res.json({ status: 400, message: 'No record found for that Facebook ID' }, 400);
+				
+					// No Record, as it's Facebook we'll create one
+					//return res.json({ status: 400, message: 'No record found for that Facebook ID' }, 400);
+					
+					var graph_api = 'https://graph.facebook.com/me?access_token=',
+						facebook_token = req.param('facebook_token');
+				
+					request.get({ url: graph_api+facebook_token, json: true }, function (error, response, body) {
+					
+						if (!error && response.statusCode == 200) {
+							
+							var new_api_key = hat();
+							
+							User.create({
+							 
+							 	name: body.name,
+							 	email: body.email,
+							 	facebookId: req.param('facebook_id'),
+							 	password: 'null',
+							 	api_key: new_api_key
+							 	
+							}).done(function(err, user){
+							 
+								if (err) {
+									return res.json({ status: 400, error: err }, 400);
+								}
+								
+								if (user) {
+									console.log('Facebook user created!');
+									user.apiKey = user.api_key;
+									return res.json(user, 200);
+								} else {
+									return res.json({ status: 500, error: 'Looks like something went wrong' }, 500);
+								}
+							 	
+							});
+							
+						} else {
+							return res.json({ status: 403, error: 'Facebook token not valid' }, 403);
+						}
+						
+					});
 				}
 				
 			});
@@ -233,6 +275,10 @@ module.exports = {
 	* Overrides for the settings in `config/controllers.js`
 	* (specific to AuthController)
 	*/
-	_config: {}
+	_config: {
+		blueprints: {
+			pluralize: false
+		}
+	}
   
 };

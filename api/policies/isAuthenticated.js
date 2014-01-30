@@ -10,9 +10,22 @@
 
 module.exports = function(req, res, next) {
 
-	if (req.param('api_key')) {
+	// Provide option to send API key as a query param or x-api-key header.
+	// Query params are cached in server logs and browser history, potential security risk
 	
-		User.findOne({ api_key: req.param('api_key') }).done(function(err, users) {
+	if (req.headers['x-api-key'] !== '' || req.param('api_key')) {
+		
+		var apiKey = '';
+		
+		if (req.headers['x-api-key'] !== '') {
+			apiKey = req.headers['x-api-key'];
+		} 
+		
+		if (req.param('api_key')) {
+			apiKey = req.param('api_key');
+		}
+	
+		User.findOne({ api_key: apiKey }).done(function(err, users) {
 		
 			if (err) {
 				return res.json({ status: 500, error: err }, 500);
